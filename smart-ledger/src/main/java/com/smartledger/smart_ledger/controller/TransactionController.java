@@ -10,8 +10,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "*", allowedHeaders = "*",
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
+@CrossOrigin(origins = {
+        "http://localhost:3000",
+        "https://6a1dab9c595d8126f6b7af0c--cozy-llama-f2a871.netlify.app"
+},
+        allowedHeaders = "*",
+        methods = {RequestMethod.GET, RequestMethod.POST})
 @RestController
 @RequestMapping("/api/transactions")
 public class TransactionController {
