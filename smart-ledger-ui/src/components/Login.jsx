@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './Login.css';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080';
+
 function Login({ onLoginSuccess, onNavigateToSignup }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -67,12 +69,8 @@ function Login({ onLoginSuccess, onNavigateToSignup }) {
         if (eErr || pErr) return;
 
 
-        if (!tryLocalLogin()) return;
-
-
         try {
-            const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080';
-            const response = await fetch(`${BACKEND_URL}/api/auth/login`,  {
+            const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -80,17 +78,30 @@ function Login({ onLoginSuccess, onNavigateToSignup }) {
 
             if (response.ok) {
                 const data = await response.json();
-
                 sessionStorage.setItem('token', data.token);
-                if (data.name) {
-                    sessionStorage.setItem('smart_ledger_current_name', data.name);
-                }
-            }
+                sessionStorage.setItem('smart_ledger_current_user', email);
+                sessionStorage.setItem('smart_ledger_current_name', data.name || '');
+                onLoginSuccess();
+                return;
+            } else {
 
+                const allUsers = JSON.parse(localStorage.getItem('smart_ledger_all_users') || '{}');
+                if (allUsers[email]) {
+                    setPasswordError('Incorrect password or mail');
+                } else {
+                    setPasswordError('Create account');
+                }
+                return;
+            }
         } catch (_) {
 
         }
 
+
+        if (!tryLocalLogin()) {
+            setPasswordError('Create account');
+            return;
+        }
         onLoginSuccess();
     };
 
