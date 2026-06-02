@@ -66,6 +66,7 @@ Start the Frontend:
 Access the application:
 
 Dashboard: http://localhost:3000
+
 Live Projrct:https://6a1dab9c595d8126f6b7af0c--cozy-llama-f2a871.netlify.app
 
 Future Improvements:
