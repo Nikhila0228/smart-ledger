@@ -58,7 +58,7 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
         updatedUsers[email] = {
             name: name.trim(),
             email: email.trim(),
-            password: password,   // plain text — login లో same గా compare చేస్తాం
+            password: password,   
             createdAt: new Date().toISOString()
         };
         localStorage.setItem('smart_ledger_all_users', JSON.stringify(updatedUsers));
