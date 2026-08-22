@@ -39,9 +39,7 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
         setPasswordError(validatePasswordStrength(val));
     };
 
-    // Initializes the LOCAL-ONLY features (income + budgets) that have no
-    // backend counterpart at all — needed regardless of whether this
-    // account ends up real-backend or local-fallback.
+   
     const initializeLocalUserData = (userEmail) => {
         const dataKey = `smart_ledger_data_${userEmail}_incomes`;
         localStorage.setItem(dataKey, JSON.stringify([]));
@@ -56,8 +54,7 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
         }));
     };
 
-    // Keeps a local mirror of the account too, so local-fallback login
-    // still works later if the backend ever becomes unreachable.
+    
     const saveLocalUserRecord = (userEmail, userName) => {
         const allUsers = JSON.parse(localStorage.getItem('smart_ledger_all_users') || '{}');
         const updatedUsers = { ...allUsers };
@@ -88,7 +85,7 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
         const trimmedEmail = email.trim();
         const trimmedName = name.trim();
 
-        // Try the REAL backend FIRST, and actually wait for + read the response
+        
         try {
             const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
                 method: 'POST',
@@ -115,12 +112,12 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
                 return;
             }
 
-            // Any other non-ok backend response — fall through to local fallback below
+            
         } catch (_) {
-            // Network/backend unreachable — fall through to local fallback below
+           
         }
 
-        // LOCAL FALLBACK — only reached if the backend call failed or was unreachable
+        
         saveLocalUserRecord(trimmedEmail, trimmedName);
         initializeLocalUserData(trimmedEmail);
         sessionStorage.setItem('token', 'local_token_' + trimmedEmail);
