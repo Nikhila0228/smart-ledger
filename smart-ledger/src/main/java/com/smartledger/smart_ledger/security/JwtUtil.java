@@ -11,10 +11,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    // NOTE: the new jjwt library enforces a minimum key length for HS256
-    // (256 bits / 32+ characters). Your old secret "smartledgersecretkey"
-    // is only 21 characters and would throw a WeakKeyException here —
-    // it's been lengthened below to satisfy that requirement.
+    
     private final SecretKey secretKey =
             Keys.hmacShaKeyFor("smartledgersecretkeysmartledgersecretkey123456".getBytes());
 
