@@ -52,7 +52,7 @@ class ApiService {
     }
 
     addTransaction(amount, category) {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
 
 
         if (!token || token.startsWith('local_token_')) {
