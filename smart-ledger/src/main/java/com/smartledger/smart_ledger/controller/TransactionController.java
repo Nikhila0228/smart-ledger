@@ -10,26 +10,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = {
-        "http://localhost:3000",
-        "https://6a1dab9c595d8126f6b7af0c--cozy-llama-f2a871.netlify.app"
-},
-        allowedHeaders = "*",
-        methods = {RequestMethod.GET, RequestMethod.POST})
 @RestController
 @RequestMapping("/api/transactions")
 public class TransactionController {
 
     @Autowired
     private TransactionService transactionService;
-
     @Autowired
     private TransactionRepository transactionRepository;
-
-
     @Autowired
     private JwtUtil jwtUtil;
-
 
     private String getUserIdFromHeader(String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -43,22 +33,16 @@ public class TransactionController {
         return null;
     }
 
-
     @GetMapping
     public ResponseEntity<?> getAllTransactions(
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-
         String userId = getUserIdFromHeader(authHeader);
-
         if (userId == null) {
-
             return ResponseEntity.status(401).body("Unauthorized");
         }
-
         List<Transaction> userTransactions = transactionRepository.findByUserId(userId);
         return ResponseEntity.ok(userTransactions);
     }
-
 
     @PostMapping("/add")
     public ResponseEntity<?> addTransaction(
@@ -67,25 +51,18 @@ public class TransactionController {
             @RequestParam("merchant") String merchant,
             @RequestParam(value = "category", required = false) String category,
             @RequestParam(value = "rawSms", required = false) String rawSms) {
-
         String userId = getUserIdFromHeader(authHeader);
-
         if (userId == null) {
             return ResponseEntity.status(401).body("Unauthorized");
         }
-
         Transaction transaction = new Transaction();
-
-
         transaction.setUserId(userId);
         transaction.setAmount(amount);
-
         String cleanCategory = (category != null && !category.trim().isEmpty())
                 ? category.trim() : "Food";
         transaction.setCategory(cleanCategory);
         transaction.setMerchant(cleanCategory);
         transaction.setRawSms(rawSms != null ? rawSms : "");
-
         Transaction saved = transactionRepository.save(transaction);
         return ResponseEntity.ok(saved);
     }
