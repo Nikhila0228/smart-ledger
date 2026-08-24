@@ -8,6 +8,7 @@ function Login({ onLoginSuccess, onNavigateToSignup }) {
     const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false); // NEW
 
     const validateEmail = (val) => {
         if (!val) return '';
@@ -21,7 +22,7 @@ function Login({ onLoginSuccess, onNavigateToSignup }) {
         const hasNumber = /[0-9]/.test(val);
         const hasSymbol = /[^a-zA-Z0-9]/.test(val);
         if (!hasLetter || !hasNumber || !hasSymbol) {
-            return 'Enter strong password using letters, numbers, symbols';
+            return 'Enter correct password';
         }
         return '';
     };
@@ -38,7 +39,6 @@ function Login({ onLoginSuccess, onNavigateToSignup }) {
         setPasswordError(validatePasswordStrength(val));
     };
 
-
     const tryLocalLogin = () => {
         const allUsers = JSON.parse(localStorage.getItem('smart_ledger_all_users') || '{}');
         const userRecord = allUsers[email];
@@ -52,7 +52,6 @@ function Login({ onLoginSuccess, onNavigateToSignup }) {
             return false;
         }
 
-
         sessionStorage.setItem('token', 'local_token_' + email);
         sessionStorage.setItem('smart_ledger_current_user', email);
         sessionStorage.setItem('smart_ledger_current_name', userRecord.name || '');
@@ -62,12 +61,15 @@ function Login({ onLoginSuccess, onNavigateToSignup }) {
     const handleLogin = async (e) => {
         e.preventDefault();
 
+        if (isSubmitting) return; 
+
         const eErr = validateEmail(email);
         const pErr = validatePasswordStrength(password);
         setEmailError(eErr);
         setPasswordError(pErr);
         if (eErr || pErr) return;
 
+        setIsSubmitting(true); 
 
         try {
             const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
@@ -84,7 +86,6 @@ function Login({ onLoginSuccess, onNavigateToSignup }) {
                 onLoginSuccess();
                 return;
             } else {
-
                 const allUsers = JSON.parse(localStorage.getItem('smart_ledger_all_users') || '{}');
                 if (allUsers[email]) {
                     setPasswordError('Incorrect password or mail');
@@ -94,9 +95,10 @@ function Login({ onLoginSuccess, onNavigateToSignup }) {
                 return;
             }
         } catch (_) {
-
+            // network/backend unreachable — falls through to local fallback below
+        } finally {
+            setIsSubmitting(false); // NEW
         }
-
 
         if (!tryLocalLogin()) {
             setPasswordError('Create account');
@@ -146,7 +148,9 @@ function Login({ onLoginSuccess, onNavigateToSignup }) {
                         )}
                     </div>
 
-                    <button type="submit">Get Started</button>
+                    <button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? 'Logging in...' : 'Get Started'}
+                    </button>
                 </form>
 
                 <div className="signup-link">
