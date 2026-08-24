@@ -12,29 +12,19 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {
-        "http://localhost:3000",
-        "https://6a1dab9c595d8126f6b7af0c--cozy-llama-f2a871.netlify.app"
-})
 public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private JwtUtil jwtUtil;
 
-
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             return ResponseEntity.status(409).body("Email already registered");
         }
-
-
         userRepository.save(user);
-
         String token = jwtUtil.generateToken(user.getEmail());
         return ResponseEntity.ok(Collections.singletonMap("token", token));
     }
@@ -42,14 +32,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User loginUser) {
         User user = userRepository.findByEmail(loginUser.getEmail()).orElse(null);
-
         if (user == null || !user.getPassword().equals(loginUser.getPassword())) {
             return ResponseEntity.status(401).body("Invalid Email or Password");
         }
-
         String token = jwtUtil.generateToken(user.getEmail());
-
-
         return ResponseEntity.ok(Map.of(
                 "token", token,
                 "name", user.getName() != null ? user.getName() : ""
