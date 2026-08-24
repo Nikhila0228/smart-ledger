@@ -9,6 +9,7 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
     const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false); // NEW
 
     const validateEmail = (val) => {
         if (!val) return '';
@@ -39,7 +40,6 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
         setPasswordError(validatePasswordStrength(val));
     };
 
-   
     const initializeLocalUserData = (userEmail) => {
         const dataKey = `smart_ledger_data_${userEmail}_incomes`;
         localStorage.setItem(dataKey, JSON.stringify([]));
@@ -54,7 +54,6 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
         }));
     };
 
-    
     const saveLocalUserRecord = (userEmail, userName) => {
         const allUsers = JSON.parse(localStorage.getItem('smart_ledger_all_users') || '{}');
         const updatedUsers = { ...allUsers };
@@ -69,6 +68,8 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
 
     const handleSignup = async (e) => {
         e.preventDefault();
+
+        if (isSubmitting) return; //  blocks a second submit while one is running
 
         const eErr = validateEmail(email);
         const pErr = validatePasswordStrength(password);
@@ -85,7 +86,8 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
         const trimmedEmail = email.trim();
         const trimmedName = name.trim();
 
-        
+        setIsSubmitting(true); 
+
         try {
             const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
                 method: 'POST',
@@ -95,12 +97,9 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
 
             if (response.ok) {
                 const data = await response.json();
-
-                // Real success — use the REAL token, not a fake local one
                 sessionStorage.setItem('token', data.token);
                 sessionStorage.setItem('smart_ledger_current_user', trimmedEmail);
                 sessionStorage.setItem('smart_ledger_current_name', trimmedName);
-
                 saveLocalUserRecord(trimmedEmail, trimmedName);
                 initializeLocalUserData(trimmedEmail);
                 onSignupSuccess();
@@ -111,13 +110,12 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
                 setEmailError('Email already exists');
                 return;
             }
-
-            
         } catch (_) {
-           
+            // network/backend unreachable — falls through to local fallback below
+        } finally {
+            setIsSubmitting(false); // NEW
         }
 
-        
         saveLocalUserRecord(trimmedEmail, trimmedName);
         initializeLocalUserData(trimmedEmail);
         sessionStorage.setItem('token', 'local_token_' + trimmedEmail);
@@ -176,7 +174,9 @@ function Signup({ onNavigateToLogin, onSignupSuccess }) {
                         )}
                     </div>
 
-                    <button type="submit">Sign Up</button>
+                    <button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? 'Creating Account...' : 'Sign Up'}
+                    </button>
                 </form>
 
                 <div className="signup-link" style={{ marginTop: '15px' }}>
